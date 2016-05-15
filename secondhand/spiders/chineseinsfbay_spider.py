@@ -6,7 +6,7 @@ from scrapy.linkextractors import LinkExtractor
 
 from secondhand.items import chineseinsfbayItem
 
-class MySpider(CrawlSpider):
+class ChineseinsfbaySpider(CrawlSpider):
     name = 'chineseinsfbay'
     allowed_domains = ['chineseinsfbay.com']
     start_urls = ["http://www.chineseinsfbay.com/f/page_viewforum/f_3.html/"]
