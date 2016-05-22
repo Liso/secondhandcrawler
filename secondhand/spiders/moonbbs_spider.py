@@ -39,7 +39,7 @@ class MoonbbsSpider(CrawlSpider):
               item['tag'] = subject.xpath('text()').extract()
               item['title'] = subject.xpath('text()').extract()
               item['link'] = response.urljoin(subject.xpath('@href').extract()[0])
-              item['timestamp'] = topic.xpath('tr/td[@class="by"]/em/span/span/text()').extract()
+              item['timestamp'] = topic.xpath('tr/td[@class="by"]/em/span/span/@title').extract()
               items.append(item)
         return items
 
