@@ -4,13 +4,12 @@ import datetime
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
-from secondhand.items import chineseinsfbayItem
+from secondhand.items import moonbbsItem
 
-class ChineseinsfbaySpider(CrawlSpider):
-    name = 'chineseinsfbay'
-    allowed_domains = ['chineseinsfbay.com']
-    start_urls = ["http://www.chineseinsfbay.com/f/page_viewforum/f_3.html/"]
-    next_page = u"下一页"
+class MoonbbsSpider(CrawlSpider):
+    name = 'moonbbs'
+    allowed_domains = ['moonbbs.com']
+    start_urls = ["http://www.moonbbs.com/forum-46-1.html"]
     _stop_following_links = False
 
     rules = (
@@ -19,7 +18,7 @@ class ChineseinsfbaySpider(CrawlSpider):
         # Rule(LinkExtractor(allow=('category\.php', ), deny=('subsection\.php', ))),
 
         # Extract links matching 'item.php' and parse them with the spider's method parse_item
-        Rule(LinkExtractor(restrict_xpaths=('//div[@class="topic_option_right pagination_right"]/a[text()="' + next_page + '"]', )), callback='parse_start_url', follow=True),
+        Rule(LinkExtractor(restrict_xpaths=('//div[@class="pg"]/a[@class="nxt"]', )), callback='parse_start_url', follow=True),
     )
 
     def parse_start_url(self, response):
@@ -32,20 +31,21 @@ class ChineseinsfbaySpider(CrawlSpider):
             self._stop_following_links = True
         
         items = []
-        topics = response.xpath('//div[@class="topic_list_detail"]')
+        topics = response.xpath('//tbody[starts-with(@id, "normalthread_")]')
         for topic in topics:
-            subject = topic.xpath('div[@class="topic_list_12"]/div[@class="havenopage"]/a[@class="title"]')
+            subject = topic.xpath('tr/th[@class="new"]/a[@class="xst"]')
             if subject:
-              item = chineseinsfbayItem()
+              item = moonbbsItem()
+              item['tag'] = subject.xpath('text()').extract()
               item['title'] = subject.xpath('text()').extract()
               item['link'] = response.urljoin(subject.xpath('@href').extract()[0])
-              item['timestamp'] = topic.xpath('div[@class="topic_list_2"]/div/span[@class="time"]/text()').extract()
+              item['timestamp'] = topic.xpath('tr/td[@class="by"]/em/span/span/text()').extract()
               items.append(item)
         return items
 
     def _timestamp_too_old(self, response):
-        time_string = response.xpath('//span[@class="time"]/text()').extract()[0]
-        if self._validate(time_string) and time_string < '2016-05-00':
+        time_string = response.xpath('//td[@class="by"]/em/span/span/@title').extract()[0]
+        if time_string < '2016-5-19':
             return True
         else:
             return False
