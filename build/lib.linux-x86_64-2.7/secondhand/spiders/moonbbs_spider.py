@@ -33,19 +33,19 @@ class MoonbbsSpider(CrawlSpider):
         items = []
         topics = response.xpath('//tbody[starts-with(@id, "normalthread_")]')
         for topic in topics:
-            subject = topic.xpath('tr/th[@class="new"]')
+            subject = topic.xpath('tr/th[@class="new"]/a[@class="xst"]')
             if subject:
               item = moonbbsItem()
-              item['tag'] = subject.xpath('em/a/text()').extract()
-              item['title'] = subject.xpath('a[@class="xst"]/text()').extract()
-              item['link'] = response.urljoin(subject.xpath('a[@class="xst"]/@href').extract()[0])
+              item['tag'] = subject.xpath('text()').extract()
+              item['title'] = subject.xpath('text()').extract()
+              item['link'] = response.urljoin(subject.xpath('@href').extract()[0])
               item['timestamp'] = topic.xpath('tr/td[@class="by"]/em/span/span/@title').extract()
               items.append(item)
         return items
 
     def _timestamp_too_old(self, response):
         time_string = response.xpath('//td[@class="by"]/em/span/span/@title').extract()[0]
-        if time_string < '2016-5-21':
+        if time_string < '2016-5-19':
             return True
         else:
             return False

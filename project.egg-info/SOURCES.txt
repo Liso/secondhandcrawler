@@ -10,3 +10,4 @@ secondhand/pipelines.py
 secondhand/settings.py
 secondhand/spiders/__init__.py
 secondhand/spiders/chineseinsfbay_spider.py
+secondhand/spiders/moonbbs_spider.py
