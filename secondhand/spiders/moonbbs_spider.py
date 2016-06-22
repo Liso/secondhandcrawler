@@ -36,8 +36,8 @@ class MoonbbsSpider(CrawlSpider):
             subject = topic.xpath('tr/th[@class="new"]')
             if subject:
               item = moonbbsItem()
-              item['tag'] = subject.xpath('em/a/text()').extract()
-              item['title'] = subject.xpath('a[@class="xst"]/text()').extract()
+              item['tag'] = subject.xpath('em/a/text()').extract()[0]
+              item['title'] = subject.xpath('a[@class="xst"]/text()').extract()[0]
               item['link'] = response.urljoin(subject.xpath('a[@class="xst"]/@href').extract()[0])
               item['timestamp'] = topic.xpath('tr/td[@class="by"]/em/span/span/@title').extract()[0]
               items.append(item)
@@ -49,11 +49,4 @@ class MoonbbsSpider(CrawlSpider):
         if time_string < three_days_ago.date().strftime("%Y-%m-%d"):
             return True
         else:
-            return False
-
-    def _validate(self, date_text):
-        try:
-            datetime.strptime(date_text, '%Y-%m-%d')
-            return True
-        except ValueError:
             return False

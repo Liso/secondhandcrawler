@@ -37,7 +37,7 @@ class ChineseinsfbaySpider(CrawlSpider):
             subject = topic.xpath('div[@class="topic_list_12"]/div[@class="havenopage"]/a[@class="title"]')
             if subject:
               item = chineseinsfbayItem()
-              item['title'] = subject.xpath('text()').extract()
+              item['title'] = subject.xpath('text()').extract()[0]
               item['link'] = response.urljoin(subject.xpath('@href').extract()[0])
               item['timestamp'] = topic.xpath('div[@class="topic_list_2"]/div/span[@class="time"]/text()').extract()[0]
               items.append(item)

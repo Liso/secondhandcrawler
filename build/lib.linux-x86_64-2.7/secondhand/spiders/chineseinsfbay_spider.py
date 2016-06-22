@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
-import datetime
+from datetime import datetime, timedelta
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
@@ -39,20 +39,21 @@ class ChineseinsfbaySpider(CrawlSpider):
               item = chineseinsfbayItem()
               item['title'] = subject.xpath('text()').extract()
               item['link'] = response.urljoin(subject.xpath('@href').extract()[0])
-              item['timestamp'] = topic.xpath('div[@class="topic_list_2"]/div/span[@class="time"]/text()').extract()
+              item['timestamp'] = topic.xpath('div[@class="topic_list_2"]/div/span[@class="time"]/text()').extract()[0]
               items.append(item)
         return items
 
     def _timestamp_too_old(self, response):
         time_string = response.xpath('//span[@class="time"]/text()').extract()[0]
-        if self._validate(time_string) and time_string < '2016-05-00':
+        three_days_ago = datetime.today() - timedelta(days=3)
+        if self._validate(time_string) and time_string < three_days_ago.date().strftime("%Y-%m-%d"):
             return True
         else:
             return False
 
     def _validate(self, date_text):
         try:
-            datetime.datetime.strptime(date_text, '%Y-%m-%d')
+            datetime.strptime(date_text, '%Y-%m-%d')
             return True
         except ValueError:
             return False
