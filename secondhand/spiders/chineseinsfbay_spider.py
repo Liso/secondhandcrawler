@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import pytz
 from datetime import datetime, timedelta
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
@@ -12,6 +13,8 @@ class ChineseinsfbaySpider(CrawlSpider):
     start_urls = ["http://www.chineseinsfbay.com/f/page_viewforum/f_3.html/"]
     next_page = u"下一页"
     _stop_following_links = False
+    tz = pytz.timezone('America/Los_Angeles')
+    today = datetime.now(tz)
 
     rules = (
         # Extract links matching 'category.php' (but not matching 'subsection.php')
@@ -39,13 +42,13 @@ class ChineseinsfbaySpider(CrawlSpider):
               item = chineseinsfbayItem()
               item['title'] = subject.xpath('text()').extract()[0]
               item['link'] = response.urljoin(subject.xpath('@href').extract()[0])
-              item['timestamp'] = topic.xpath('div[@class="topic_list_2"]/div/span[@class="time"]/text()').extract()[0]
+              item['timestamp'] = self._get_datetime(topic.xpath('div[@class="topic_list_2"]/div/span[@class="time"]/text()').extract()[0])
               items.append(item)
         return items
 
     def _timestamp_too_old(self, response):
         time_string = response.xpath('//span[@class="time"]/text()').extract()[0]
-        three_days_ago = datetime.today() - timedelta(days=3)
+        three_days_ago = self.today - timedelta(days=3)
         if self._validate(time_string) and time_string < three_days_ago.date().strftime("%Y-%m-%d"):
             return True
         else:
@@ -57,3 +60,12 @@ class ChineseinsfbaySpider(CrawlSpider):
             return True
         except ValueError:
             return False
+
+    def _get_datetime(self, time_string):
+       try:
+         if self._validate(time_string):
+           return time_string
+         else:
+           return self.today.date().strftime("%Y-%m-%d") + " " + time_string 
+       except ValueError:
+           return self.today.date().strftime("%Y-%m-%d")
