@@ -11,6 +11,7 @@ import scrapy
 class SecondhandItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
+    tag = scrapy.Field()
     title = scrapy.Field()
     link = scrapy.Field()
     timestamp = scrapy.Field()
@@ -19,4 +20,4 @@ class chineseinsfbayItem(SecondhandItem):
     pass
 
 class moonbbsItem(SecondhandItem):
-    tag = scrapy.Field()
+    pass
