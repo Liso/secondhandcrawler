@@ -5,7 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-tag_keywords = ('求', )
+tag_keywords = (u'求', )
 
 class SecondhandPipeline(object):
     def process_item(self, item, spider):
@@ -21,8 +21,9 @@ class TagPipeline(object):
       return item
 
     def parseTitle(self, item):
-      if (item['title'].find(s) >= 0 for s in tag_keywords):
-          item['tag'] = '求购'
+      global tag_keywords
+      if any(word in item['title'] for word in tag_keywords):
+          item['tag'] = u'求购'
       else:
-          item['tag'] = '出售'
+          item['tag'] = u'出售'
 

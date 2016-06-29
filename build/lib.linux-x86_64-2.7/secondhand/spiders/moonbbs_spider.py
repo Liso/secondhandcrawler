@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import pytz
 from datetime import datetime, timedelta
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
@@ -11,6 +12,8 @@ class MoonbbsSpider(CrawlSpider):
     allowed_domains = ['moonbbs.com']
     start_urls = ["http://www.moonbbs.com/forum-46-1.html"]
     _stop_following_links = False
+    tz = pytz.timezone('America/Los_Angeles')
+    today = datetime.now(tz)
 
     rules = (
         # Extract links matching 'category.php' (but not matching 'subsection.php')
@@ -36,7 +39,9 @@ class MoonbbsSpider(CrawlSpider):
             subject = topic.xpath('tr/th[@class="new"]')
             if subject:
               item = moonbbsItem()
-              item['tag'] = subject.xpath('em/a/text()').extract()[0]
+              tag_xpath = subject.xpath('em/a/text()').extract()
+              if tag_xpath:
+                item['tag'] = tag_xpath[0]
               item['title'] = subject.xpath('a[@class="xst"]/text()').extract()[0]
               item['link'] = response.urljoin(subject.xpath('a[@class="xst"]/@href').extract()[0])
               item['timestamp'] = topic.xpath('tr/td[@class="by"]/em/span/span/@title').extract()[0]
@@ -45,8 +50,9 @@ class MoonbbsSpider(CrawlSpider):
 
     def _timestamp_too_old(self, response):
         time_string = response.xpath('//td[@class="by"]/em/span/span/@title').extract()[0]
-        three_days_ago = datetime.today() - timedelta(days=3)
-        if time_string < three_days_ago.date().strftime("%Y-%m-%d"):
+        three_days_ago = self.today - timedelta(days=3)
+        datetime_string = "%Y-%m-%d"
+        if self.tz.localize(datetime.strptime(time_string, datetime_string)) < three_days_ago:
             return True
         else:
             return False
